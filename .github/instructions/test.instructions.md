@@ -19,7 +19,7 @@ applyTo: "test/**/*.{test,spec}.ts"
 
 - whenever possible, avoid mocking 3rd party dependencies.
 - ensure tests follow the arrange-act-assert pattern.
-- avoid hardcoding fixture values in my tests and assertions, so always extract a variable with the value to
+- avoid hardcoding fixture values in tests and assertions, so always extract a variable with the value to
   reference.
 - use msw to provide test doubles of APIs for testing.
 - ensure tests run the same way locally as they would in CI.
