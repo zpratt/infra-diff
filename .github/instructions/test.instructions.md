@@ -6,10 +6,10 @@ applyTo: "test/**/*.{test,spec}.ts"
 
 ## Test Data
 
-- when the actual value of inputs are not important, use chance.js to generate random test data to fuzz inputs
-- ensure when test data is generated with chance, it will lead to readable assertion failures
+- when the actual value of inputs are not important, use Chance.js to generate random test data to fuzz inputs
+- ensure when test data is generated with Chance.js, it will lead to readable assertion failures
 - do not use unnecessarily realistic or complex values for test data (e.g. use simple strings or numbers instead of
-  specially crafted chance configuration objects)
+  specially crafted Chance.js configuration objects)
 
 ## Dependencies
 
