@@ -1,6 +1,6 @@
 import Chance from "chance";
 import { describe, expect, it } from "vitest";
-import type { Plan } from "../entities/Plan";
+import { Plan, ResourceChange } from "../entities/Plan";
 import type { IPlanParser } from "./IPlanParser";
 
 const chance = new Chance();
@@ -18,11 +18,7 @@ describe("IPlanParser", () => {
 		const mockParser: IPlanParser = {
 			parse: async (content: string): Promise<Plan> => {
 				const parsed = JSON.parse(content);
-				return {
-					formatVersion: parsed.format_version,
-					terraformVersion: parsed.terraform_version,
-					resourceChanges: [],
-				};
+				return new Plan(parsed.format_version, parsed.terraform_version, []);
 			},
 		};
 
@@ -67,20 +63,21 @@ describe("IPlanParser", () => {
 							before: Record<string, unknown> | null;
 							after: Record<string, unknown> | null;
 						};
-					}) => ({
-						address: rc.address,
-						type: rc.type,
-						name: rc.name,
-						actions: rc.change.actions,
-						before: rc.change.before,
-						after: rc.change.after,
-					}),
+					}) =>
+						new ResourceChange(
+							rc.address,
+							rc.type,
+							rc.name,
+							rc.change.actions,
+							rc.change.before,
+							rc.change.after,
+						),
 				);
-				return {
-					formatVersion: parsed.format_version,
-					terraformVersion: parsed.terraform_version,
-					resourceChanges: resourceChanges,
-				};
+				return new Plan(
+					parsed.format_version,
+					parsed.terraform_version,
+					resourceChanges,
+				);
 			},
 		};
 
@@ -98,8 +95,8 @@ describe("IPlanParser", () => {
 
 		const mockParser: IPlanParser = {
 			parse: async (content: string): Promise<Plan> => {
-				JSON.parse(content);
-				throw new Error("Should have thrown during parse");
+				const parsed = JSON.parse(content);
+				return new Plan(parsed.format_version, parsed.terraform_version, []);
 			},
 		};
 
