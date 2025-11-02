@@ -26,4 +26,4 @@ applyTo: "test/**/*.{test,spec}.ts"
 - ensure that tests are isolated and do not depend on external state.
 - use test doubles for any external dependencies in my tests.
 - ensure conditional paths in production code are meaningfully asserted to explain their purpose.
-- always avoid partial mocks in my tests.
+- always avoid partial mocks in tests.
