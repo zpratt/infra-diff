@@ -31,3 +31,5 @@ applyTo: "test/**/*.{test,spec}.ts"
 - ensure test descriptions to read like user stories and not like implementation details.
 - tests should focus on behavior and not implementation details.
 - ensure that tests have valuable assertions for each behavior in the module under test.
+- ensure assertions explain the intent of the test.
+- ensure tests guard against the production code being updated in such a way that the test would pass inappropriately.
