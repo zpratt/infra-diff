@@ -18,7 +18,7 @@ applyTo: "test/**/*.{test,spec}.ts"
 ## Test Design
 
 - whenever possible, avoid mocking 3rd party dependencies.
-- ensure tests to follow the arrange-act-assert pattern.
+- ensure tests follow the arrange-act-assert pattern.
 - avoid hardcoding fixture values in my tests and assertions, so always extract a variable with the value to
   reference.
 - use msw to provide test doubles of APIs for testing.
