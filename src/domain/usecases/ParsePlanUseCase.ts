@@ -20,9 +20,43 @@ type TerraformPlanJson = {
 
 export class ParsePlanUseCase implements IPlanParser {
 	async parse(content: string): Promise<Plan> {
-		const parsed: TerraformPlanJson = JSON.parse(content);
+		let parsed: unknown;
 
-		const resourceChanges = parsed.resource_changes.map(
+		try {
+			parsed = JSON.parse(content);
+		} catch (error) {
+			throw new Error(
+				`Invalid JSON in plan file: ${error instanceof Error ? error.message : "Unknown error"}`,
+			);
+		}
+
+		if (typeof parsed !== "object" || parsed === null) {
+			throw new Error("Invalid plan structure: expected an object");
+		}
+
+		const planData = parsed as Record<string, unknown>;
+
+		if (!("format_version" in planData) || !planData.format_version) {
+			throw new Error(
+				"Invalid plan structure: missing required field 'format_version'",
+			);
+		}
+
+		if (!("terraform_version" in planData) || !planData.terraform_version) {
+			throw new Error(
+				"Invalid plan structure: missing required field 'terraform_version'",
+			);
+		}
+
+		if (!("resource_changes" in planData) || !planData.resource_changes) {
+			throw new Error(
+				"Invalid plan structure: missing required field 'resource_changes'",
+			);
+		}
+
+		const typedPlan = planData as TerraformPlanJson;
+
+		const resourceChanges = typedPlan.resource_changes.map(
 			(rc) =>
 				new ResourceChange(
 					rc.address,
@@ -35,8 +69,8 @@ export class ParsePlanUseCase implements IPlanParser {
 		);
 
 		return new Plan(
-			parsed.format_version,
-			parsed.terraform_version,
+			typedPlan.format_version,
+			typedPlan.terraform_version,
 			resourceChanges,
 		);
 	}
