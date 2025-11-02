@@ -1,11 +1,7 @@
 import * as fs from "node:fs/promises";
 import { PlanFile } from "../../domain/entities/PlanFile";
 import type { IFileReader } from "../../domain/usecases/IFileReader";
-
-interface FileSystemAdapter {
-	stat(filePath: string): Promise<{ isFile(): boolean }>;
-	readFile(filePath: string): Promise<string>;
-}
+import type { FileSystemAdapter } from "../interfaces/FileSystemAdapter";
 
 const DEFAULT_FILE_SYSTEM: FileSystemAdapter = {
 	stat: (filePath: string) => fs.stat(filePath),

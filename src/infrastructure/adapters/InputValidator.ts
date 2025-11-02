@@ -1,9 +1,6 @@
 import * as fs from "node:fs/promises";
 import type { IInputValidator } from "../../domain/usecases/IInputValidator";
-
-interface FileSystemAdapter {
-	stat(filePath: string): Promise<{ isFile(): boolean }>;
-}
+import type { FileSystemAdapter } from "../interfaces/FileSystemAdapter";
 
 export class DirectoryPathError extends Error {
 	constructor(message: string = "Path is a directory, not a file") {
@@ -18,6 +15,7 @@ export class InputValidator implements IInputValidator {
 	constructor(fileSystem?: FileSystemAdapter) {
 		this.fileSystem = fileSystem || {
 			stat: (filePath: string) => fs.stat(filePath),
+			readFile: (filePath: string) => fs.readFile(filePath, "utf-8"),
 		};
 	}
 
