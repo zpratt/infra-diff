@@ -3,14 +3,22 @@ import type { ITextFormatter } from "./ITextFormatter";
 
 export class TextFormatterUseCase implements ITextFormatter {
 	format(plan: Plan): string {
-		const additions = plan.resourceChanges.filter((rc) =>
-			rc.actions.includes("create"),
-		);
-		const changes = plan.resourceChanges.filter((rc) =>
-			rc.actions.includes("update"),
-		);
-		const deletions = plan.resourceChanges.filter((rc) =>
-			rc.actions.includes("delete"),
+		const { additions, changes, deletions } = plan.resourceChanges.reduce(
+			(acc, rc) => {
+				if (rc.actions.includes("create")) {
+					acc.additions.push(rc);
+				} else if (rc.actions.includes("update")) {
+					acc.changes.push(rc);
+				} else if (rc.actions.includes("delete")) {
+					acc.deletions.push(rc);
+				}
+				return acc;
+			},
+			{
+				additions: [] as typeof plan.resourceChanges,
+				changes: [] as typeof plan.resourceChanges,
+				deletions: [] as typeof plan.resourceChanges,
+			},
 		);
 
 		const addCount = additions.length;

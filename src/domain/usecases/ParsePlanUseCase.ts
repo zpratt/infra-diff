@@ -48,13 +48,31 @@ export class ParsePlanUseCase implements IPlanParser {
 			);
 		}
 
-		if (!("resource_changes" in planData) || !planData.resource_changes) {
+		if (
+			!("resource_changes" in planData) ||
+			planData.resource_changes === undefined ||
+			!Array.isArray(planData.resource_changes)
+		) {
 			throw new Error(
 				"Invalid plan structure: missing required field 'resource_changes'",
 			);
 		}
 
 		const typedPlan = planData as TerraformPlanJson;
+
+		// Validate resource changes structure
+		for (const rc of typedPlan.resource_changes) {
+			if (!rc.address || !rc.type || !rc.name || !rc.change) {
+				throw new Error(
+					"Invalid plan structure: resource change missing required fields (address, type, name, or change)",
+				);
+			}
+			if (!Array.isArray(rc.change.actions)) {
+				throw new Error(
+					"Invalid plan structure: resource change actions must be an array",
+				);
+			}
+		}
 
 		const resourceChanges = typedPlan.resource_changes.map(
 			(rc) =>
