@@ -17,6 +17,7 @@ infra-diff is a typescript-based github action, which will show a preview of cha
   - Always use explicit version numbers when adding new dependencies.
   - Always search npm for the most recent stable version of a package.
   - Always use `npm audit` to check for vulnerabilities after installing or updating dependencies.
+- **lint GitHub Actions workflows**: `npm run lint:workflows` - Validates all GitHub Actions workflows using `actionlint` from the command line.
 
 ## Architecture
 
