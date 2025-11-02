@@ -1,11 +1,11 @@
 import Chance from "chance";
 import { describe, expect, it } from "vitest";
 import { Plan, ResourceChange } from "../entities/Plan";
-import type { IPlanParser } from "./IPlanParser";
+import { ParsePlanUseCase } from "./ParsePlanUseCase";
 
 const chance = new Chance();
 
-describe("IPlanParser", () => {
+describe("ParsePlanUseCase", () => {
 	it("should parse a valid JSON plan string into a Plan object", async () => {
 		const formatVersion = "1.0";
 		const terraformVersion = "1.5.0";
@@ -15,15 +15,10 @@ describe("IPlanParser", () => {
 			resource_changes: [],
 		});
 
-		const mockParser: IPlanParser = {
-			parse: async (content: string): Promise<Plan> => {
-				const parsed = JSON.parse(content);
-				return new Plan(parsed.format_version, parsed.terraform_version, []);
-			},
-		};
+		const parser = new ParsePlanUseCase();
+		const result = await parser.parse(jsonContent);
 
-		const result = await mockParser.parse(jsonContent);
-
+		expect(result).toBeInstanceOf(Plan);
 		expect(result.formatVersion).toBe(formatVersion);
 		expect(result.terraformVersion).toBe(terraformVersion);
 		expect(result.resourceChanges).toEqual([]);
@@ -50,56 +45,23 @@ describe("IPlanParser", () => {
 			],
 		});
 
-		const mockParser: IPlanParser = {
-			parse: async (content: string): Promise<Plan> => {
-				const parsed = JSON.parse(content);
-				const resourceChanges = parsed.resource_changes.map(
-					(rc: {
-						address: string;
-						type: string;
-						name: string;
-						change: {
-							actions: string[];
-							before: Record<string, unknown> | null;
-							after: Record<string, unknown> | null;
-						};
-					}) =>
-						new ResourceChange(
-							rc.address,
-							rc.type,
-							rc.name,
-							rc.change.actions,
-							rc.change.before,
-							rc.change.after,
-						),
-				);
-				return new Plan(
-					parsed.format_version,
-					parsed.terraform_version,
-					resourceChanges,
-				);
-			},
-		};
-
-		const result = await mockParser.parse(jsonContent);
+		const parser = new ParsePlanUseCase();
+		const result = await parser.parse(jsonContent);
 
 		expect(result.resourceChanges).toHaveLength(1);
+		expect(result.resourceChanges[0]).toBeInstanceOf(ResourceChange);
 		expect(result.resourceChanges[0].address).toBe(address);
 		expect(result.resourceChanges[0].type).toBe(type);
 		expect(result.resourceChanges[0].name).toBe(name);
 		expect(result.resourceChanges[0].actions).toEqual(["create"]);
+		expect(result.resourceChanges[0].before).toBeNull();
+		expect(result.resourceChanges[0].after).toEqual({ key: "value" });
 	});
 
 	it("should handle malformed JSON by throwing an error", async () => {
 		const malformedJson = "{ invalid json }";
+		const parser = new ParsePlanUseCase();
 
-		const mockParser: IPlanParser = {
-			parse: async (content: string): Promise<Plan> => {
-				const parsed = JSON.parse(content);
-				return new Plan(parsed.format_version, parsed.terraform_version, []);
-			},
-		};
-
-		await expect(mockParser.parse(malformedJson)).rejects.toThrow();
+		await expect(parser.parse(malformedJson)).rejects.toThrow();
 	});
 });
