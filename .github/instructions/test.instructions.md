@@ -24,7 +24,7 @@ applyTo: "test/**/*.{test,spec}.ts"
 - use msw to provide test doubles of APIs for testing.
 - ensure tests run the same way locally as they would in CI.
 - ensure that tests are isolated and do not depend on external state.
-- use test doubles for any external dependencies in my tests.
+- use test doubles for any external dependencies in tests.
 - ensure conditional paths in production code are meaningfully asserted to explain their purpose.
 - always avoid partial mocks in my tests.
 - always use spec-style tests.
