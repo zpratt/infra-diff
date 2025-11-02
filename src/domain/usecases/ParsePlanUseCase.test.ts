@@ -62,6 +62,70 @@ describe("ParsePlanUseCase", () => {
 		const malformedJson = "{ invalid json }";
 		const parser = new ParsePlanUseCase();
 
-		await expect(parser.parse(malformedJson)).rejects.toThrow();
+		await expect(parser.parse(malformedJson)).rejects.toThrow(
+			"Invalid JSON in plan file",
+		);
+	});
+
+	it("should throw descriptive error when plan is missing format_version", async () => {
+		const invalidPlan = JSON.stringify({
+			terraform_version: "1.5.0",
+			resource_changes: [],
+		});
+		const parser = new ParsePlanUseCase();
+
+		await expect(parser.parse(invalidPlan)).rejects.toThrow(
+			"Invalid plan structure: missing or invalid required field 'format_version'",
+		);
+	});
+
+	it("should throw descriptive error when plan is missing terraform_version", async () => {
+		const invalidPlan = JSON.stringify({
+			format_version: "1.0",
+			resource_changes: [],
+		});
+		const parser = new ParsePlanUseCase();
+
+		await expect(parser.parse(invalidPlan)).rejects.toThrow(
+			"Invalid plan structure: missing or invalid required field 'terraform_version'",
+		);
+	});
+
+	it("should throw descriptive error when format_version is empty string", async () => {
+		const invalidPlan = JSON.stringify({
+			format_version: "",
+			terraform_version: "1.5.0",
+			resource_changes: [],
+		});
+		const parser = new ParsePlanUseCase();
+
+		await expect(parser.parse(invalidPlan)).rejects.toThrow(
+			"Invalid plan structure: missing or invalid required field 'format_version'",
+		);
+	});
+
+	it("should throw descriptive error when terraform_version is empty string", async () => {
+		const invalidPlan = JSON.stringify({
+			format_version: "1.0",
+			terraform_version: "",
+			resource_changes: [],
+		});
+		const parser = new ParsePlanUseCase();
+
+		await expect(parser.parse(invalidPlan)).rejects.toThrow(
+			"Invalid plan structure: missing or invalid required field 'terraform_version'",
+		);
+	});
+
+	it("should throw descriptive error when plan is missing resource_changes", async () => {
+		const invalidPlan = JSON.stringify({
+			format_version: "1.0",
+			terraform_version: "1.5.0",
+		});
+		const parser = new ParsePlanUseCase();
+
+		await expect(parser.parse(invalidPlan)).rejects.toThrow(
+			"Invalid plan structure: missing required field 'resource_changes'",
+		);
 	});
 });

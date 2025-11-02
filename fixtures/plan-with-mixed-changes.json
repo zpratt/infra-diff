@@ -1,0 +1,57 @@
+{
+	"format_version": "1.0",
+	"terraform_version": "1.5.0",
+	"planned_values": {
+		"root_module": {
+			"resources": []
+		}
+	},
+	"resource_changes": [
+		{
+			"address": "aws_s3_bucket.new",
+			"mode": "managed",
+			"type": "aws_s3_bucket",
+			"name": "new",
+			"change": {
+				"actions": ["create"],
+				"before": null,
+				"after": {
+					"bucket": "new-bucket",
+					"acl": "private"
+				}
+			}
+		},
+		{
+			"address": "aws_s3_bucket.updated",
+			"mode": "managed",
+			"type": "aws_s3_bucket",
+			"name": "updated",
+			"change": {
+				"actions": ["update"],
+				"before": {
+					"bucket": "existing-bucket",
+					"acl": "private"
+				},
+				"after": {
+					"bucket": "existing-bucket",
+					"acl": "public-read"
+				}
+			}
+		},
+		{
+			"address": "aws_s3_bucket.deleted",
+			"mode": "managed",
+			"type": "aws_s3_bucket",
+			"name": "deleted",
+			"change": {
+				"actions": ["delete"],
+				"before": {
+					"bucket": "old-bucket",
+					"acl": "private"
+				},
+				"after": null
+			}
+		}
+	],
+	"configuration": {}
+}

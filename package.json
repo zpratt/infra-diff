@@ -6,8 +6,9 @@
 	"scripts": {
 		"test": "vitest run",
 		"test:watch": "vitest",
-		"test:e2e": "npm run test:e2e:file-reading",
+		"test:e2e": "npm run test:e2e:file-reading && npm run test:e2e:json-parsing",
 		"test:e2e:file-reading": "vitest run e2e/file-reading.test.ts",
+		"test:e2e:json-parsing": "vitest run e2e/json-parsing.test.ts",
 		"build": "ncc build src/index.ts -o dist --minify --no-source-map-register",
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
