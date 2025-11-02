@@ -8,7 +8,7 @@
 		"test:watch": "vitest",
 		"test:e2e": "npm run test:e2e:file-reading",
 		"test:e2e:file-reading": "vitest run e2e/file-reading.test.ts",
-		"build": "ncc build src/index.ts -o dist",
+		"build": "ncc build src/index.ts -o dist --minify --no-source-map-register",
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
 		"lint:workflows": "actionlint .github/workflows/*.yml",
