@@ -2,7 +2,12 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { Chance } from "chance";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { InputValidator } from "./InputValidator";
+import {
+	DirectoryPathError,
+	FileNotFoundError,
+	InputValidator,
+	PermissionDeniedError,
+} from "./InputValidator";
 
 const chance = new Chance();
 
@@ -56,7 +61,7 @@ describe("InputValidator", () => {
 				.validatePlanFilePath(nonExistentPath)
 				.catch((e) => e);
 
-			expect(error).toBeInstanceOf(Error);
+			expect(error).toBeInstanceOf(FileNotFoundError);
 			expect(error.message).toBe(`File does not exist: ${nonExistentPath}`);
 		});
 
@@ -70,7 +75,7 @@ describe("InputValidator", () => {
 				.validatePlanFilePath(dirPath)
 				.catch((e) => e);
 
-			expect(error).toBeInstanceOf(Error);
+			expect(error).toBeInstanceOf(DirectoryPathError);
 			expect(error.message).toBe("Path is a directory, not a file");
 		});
 
@@ -85,6 +90,7 @@ describe("InputValidator", () => {
 				stat: async () => {
 					throw eaccessError;
 				},
+				readFile: async () => "",
 			};
 
 			const validator = new InputValidator(mockFileSystem);
@@ -93,7 +99,7 @@ describe("InputValidator", () => {
 				.validatePlanFilePath(filePath)
 				.catch((e) => e);
 
-			expect(error).toBeInstanceOf(Error);
+			expect(error).toBeInstanceOf(PermissionDeniedError);
 			expect(error.message).toBe(`Permission denied: ${filePath}`);
 		});
 
@@ -106,6 +112,7 @@ describe("InputValidator", () => {
 				stat: async () => {
 					throw eisdirError;
 				},
+				readFile: async () => "",
 			};
 
 			const validator = new InputValidator(mockFileSystem);
@@ -114,7 +121,7 @@ describe("InputValidator", () => {
 				.validatePlanFilePath(filePath)
 				.catch((e) => e);
 
-			expect(error).toBeInstanceOf(Error);
+			expect(error).toBeInstanceOf(DirectoryPathError);
 			expect(error.message).toBe("Path is a directory, not a file");
 		});
 
@@ -126,6 +133,7 @@ describe("InputValidator", () => {
 				stat: async () => {
 					throw unknownError;
 				},
+				readFile: async () => "",
 			};
 
 			const validator = new InputValidator(mockFileSystem);
@@ -146,6 +154,7 @@ describe("InputValidator", () => {
 				.validatePlanFilePath(customPath)
 				.catch((e) => e);
 
+			expect(error).toBeInstanceOf(FileNotFoundError);
 			expect(error.message).toContain("File does not exist:");
 			expect(error.message).toContain(customPath);
 		});
@@ -161,6 +170,7 @@ describe("InputValidator", () => {
 				stat: async () => {
 					throw eaccessError;
 				},
+				readFile: async () => "",
 			};
 
 			const validator = new InputValidator(mockFileSystem);
@@ -169,6 +179,7 @@ describe("InputValidator", () => {
 				.validatePlanFilePath(filePath)
 				.catch((e) => e);
 
+			expect(error).toBeInstanceOf(PermissionDeniedError);
 			expect(error.message).toContain("Permission denied:");
 			expect(error.message).toContain(filePath);
 		});
@@ -181,6 +192,7 @@ describe("InputValidator", () => {
 				stat: async () => {
 					throw errorWithoutCode;
 				},
+				readFile: async () => "",
 			};
 
 			const validator = new InputValidator(mockFileSystem);

@@ -9,6 +9,20 @@ export class DirectoryPathError extends Error {
 	}
 }
 
+export class FileNotFoundError extends Error {
+	constructor(filePath: string) {
+		super(`File does not exist: ${filePath}`);
+		this.name = "FileNotFoundError";
+	}
+}
+
+export class PermissionDeniedError extends Error {
+	constructor(filePath: string) {
+		super(`Permission denied: ${filePath}`);
+		this.name = "PermissionDeniedError";
+	}
+}
+
 export class InputValidator implements IInputValidator {
 	private fileSystem: FileSystemAdapter;
 
@@ -38,10 +52,10 @@ export class InputValidator implements IInputValidator {
 			if (error instanceof Error && "code" in error) {
 				const code = (error as NodeJS.ErrnoException).code;
 				if (code === "ENOENT") {
-					throw new Error(`File does not exist: ${filePath}`);
+					throw new FileNotFoundError(filePath);
 				}
 				if (code === "EACCES") {
-					throw new Error(`Permission denied: ${filePath}`);
+					throw new PermissionDeniedError(filePath);
 				}
 				if (code === "EISDIR") {
 					throw new DirectoryPathError();
