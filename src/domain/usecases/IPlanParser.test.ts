@@ -38,9 +38,9 @@ describe("IPlanParser", () => {
 			terraform_version: "1.5.0",
 			resource_changes: [
 				{
-					address: address,
-					type: type,
-					name: name,
+					address,
+					type,
+					name,
 					change: {
 						actions: ["create"],
 						before: null,
