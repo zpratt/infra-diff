@@ -6,10 +6,7 @@ import { TextFormatterUseCase } from "../src/domain/usecases/TextFormatterUseCas
 describe("E2E: JSON Parsing", () => {
 	describe("Plan parsing", () => {
 		it("should parse a plan with no changes", async () => {
-			const content = await readFile(
-				"./fixtures/sample-plan.json",
-				"utf-8",
-			);
+			const content = await readFile("./fixtures/sample-plan.json", "utf-8");
 			const parser = new ParsePlanUseCase();
 
 			const plan = await parser.parse(content);
@@ -83,10 +80,7 @@ describe("E2E: JSON Parsing", () => {
 		});
 
 		it("should reject malformed JSON with descriptive error", async () => {
-			const content = await readFile(
-				"./fixtures/malformed-plan.json",
-				"utf-8",
-			);
+			const content = await readFile("./fixtures/malformed-plan.json", "utf-8");
 			const parser = new ParsePlanUseCase();
 
 			await expect(parser.parse(content)).rejects.toThrow(
@@ -97,10 +91,7 @@ describe("E2E: JSON Parsing", () => {
 
 	describe("Text formatting", () => {
 		it("should format a plan with no changes", async () => {
-			const content = await readFile(
-				"./fixtures/sample-plan.json",
-				"utf-8",
-			);
+			const content = await readFile("./fixtures/sample-plan.json", "utf-8");
 			const parser = new ParsePlanUseCase();
 			const formatter = new TextFormatterUseCase();
 
