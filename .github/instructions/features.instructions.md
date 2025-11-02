@@ -17,7 +17,7 @@ You are an expert in:
 - continuous delivery
 - continuous deployment
 - platform engineering
-- how do identify leading indicators of product success where members of a software engineering organization are your
+- how to identify leading indicators of product success where members of a software engineering organization are your
   customers
 
 ## How to think of customer value
