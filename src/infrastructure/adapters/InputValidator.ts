@@ -5,6 +5,13 @@ interface FileSystemAdapter {
 	stat(filePath: string): Promise<{ isFile(): boolean }>;
 }
 
+export class DirectoryPathError extends Error {
+	constructor(message: string = "Path is a directory, not a file") {
+		super(message);
+		this.name = "DirectoryPathError";
+	}
+}
+
 export class InputValidator implements IInputValidator {
 	private fileSystem: FileSystemAdapter;
 
@@ -23,13 +30,10 @@ export class InputValidator implements IInputValidator {
 			const stats = await this.fileSystem.stat(filePath);
 
 			if (!stats.isFile()) {
-				throw new Error("Path is a directory, not a file");
+				throw new DirectoryPathError();
 			}
 		} catch (error) {
-			if (
-				error instanceof Error &&
-				error.message === "Path is a directory, not a file"
-			) {
+			if (error instanceof DirectoryPathError) {
 				throw error;
 			}
 
@@ -42,7 +46,7 @@ export class InputValidator implements IInputValidator {
 					throw new Error(`Permission denied: ${filePath}`);
 				}
 				if (code === "EISDIR") {
-					throw new Error("Path is a directory, not a file");
+					throw new DirectoryPathError();
 				}
 			}
 			throw error;
