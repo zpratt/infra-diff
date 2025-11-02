@@ -26,4 +26,8 @@ applyTo: "test/**/*.{test,spec}.ts"
 - ensure that tests are isolated and do not depend on external state.
 - use test doubles for any external dependencies in my tests.
 - ensure conditional paths in production code are meaningfully asserted to explain their purpose.
-- always avoid partial mocks in tests.
+- always avoid partial mocks in my tests.
+- always use spec-style tests.
+- ensure test descriptions to read like user stories and not like implementation details.
+- tests should focus on behavior and not implementation details.
+- ensure that tests have valuable assertions for each behavior in the module under test.
