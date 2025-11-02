@@ -28,10 +28,12 @@ export class TextFormatterUseCase implements ITextFormatter {
 		let summary = "";
 
 		if (addCount === 0 && changeCount === 0 && deleteCount === 0) {
-			summary += "No changes. Infrastructure is up-to-date.\n";
-		} else {
-			summary += "Terraform will perform the following actions:\n\n";
+			summary += "No changes. Infrastructure is up-to-date.\n\n";
+			summary += `Plan: ${addCount} to add, ${changeCount} to change, ${deleteCount} to destroy.\n`;
+			return summary;
 		}
+
+		summary += "Terraform will perform the following actions:\n\n";
 
 		if (additions.length > 0) {
 			summary += "Resources to be created:\n";

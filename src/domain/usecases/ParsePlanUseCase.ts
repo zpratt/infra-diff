@@ -36,15 +36,21 @@ export class ParsePlanUseCase implements IPlanParser {
 
 		const planData = parsed as Record<string, unknown>;
 
-		if (!("format_version" in planData) || !planData.format_version) {
+		if (
+			!("format_version" in planData) ||
+			typeof planData.format_version !== "string"
+		) {
 			throw new Error(
-				"Invalid plan structure: missing required field 'format_version'",
+				"Invalid plan structure: missing or invalid required field 'format_version'",
 			);
 		}
 
-		if (!("terraform_version" in planData) || !planData.terraform_version) {
+		if (
+			!("terraform_version" in planData) ||
+			typeof planData.terraform_version !== "string"
+		) {
 			throw new Error(
-				"Invalid plan structure: missing required field 'terraform_version'",
+				"Invalid plan structure: missing or invalid required field 'terraform_version'",
 			);
 		}
 
