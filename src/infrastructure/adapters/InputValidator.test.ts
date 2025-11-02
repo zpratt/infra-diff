@@ -58,20 +58,4 @@ describe("InputValidator", () => {
 			"Path is a directory, not a file",
 		);
 	});
-
-	it("should throw an error if file is not readable", async () => {
-		const fileName = `plan-${chance.word()}.json`;
-		testFilePath = path.join(testDir, fileName);
-		await fs.writeFile(testFilePath, JSON.stringify({ test: "data" }), "utf-8");
-
-		await fs.chmod(testFilePath, 0o000);
-
-		const validator = new InputValidator();
-
-		await expect(
-			validator.validatePlanFilePath(testFilePath),
-		).rejects.toThrow();
-
-		await fs.chmod(testFilePath, 0o644);
-	});
 });

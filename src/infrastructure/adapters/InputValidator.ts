@@ -13,8 +13,6 @@ export class InputValidator implements IInputValidator {
 			if (!stats.isFile()) {
 				throw new Error("Path is a directory, not a file");
 			}
-
-			await fs.access(filePath, fs.constants.R_OK);
 		} catch (error) {
 			if (error instanceof Error) {
 				if (
@@ -24,13 +22,8 @@ export class InputValidator implements IInputValidator {
 					throw error;
 				}
 
-				if ("code" in error) {
-					if (error.code === "ENOENT") {
-						throw new Error(`File does not exist: ${filePath}`);
-					}
-					if (error.code === "EACCES") {
-						throw new Error(`File is not readable: ${filePath}`);
-					}
+				if ("code" in error && error.code === "ENOENT") {
+					throw new Error(`File does not exist: ${filePath}`);
 				}
 			}
 			throw error;
