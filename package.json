@@ -1,0 +1,49 @@
+{
+	"name": "infra-diff",
+	"version": "1.0.0",
+	"description": "human readable diffs from IaC plans",
+	"main": "dist/index.js",
+	"scripts": {
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"test:e2e": "npm run test:e2e:file-reading",
+		"test:e2e:file-reading": "vitest run e2e/file-reading.test.ts",
+		"build": "ncc build src/index.ts -o dist",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write .",
+		"format": "biome format --write ."
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/zpratt/infra-diff.git"
+	},
+	"keywords": [
+		"pull-request",
+		"comments",
+		"terraform",
+		"terragrunt",
+		"opentofu",
+		"github-action"
+	],
+	"author": "",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/zpratt/infra-diff/issues"
+	},
+	"homepage": "https://github.com/zpratt/infra-diff#readme",
+	"devDependencies": {
+		"@biomejs/biome": "2.3.2",
+		"@github/local-action": "^6.0.2",
+		"@types/chance": "^1.1.7",
+		"@types/node": "^24.9.2",
+		"@vercel/ncc": "^0.38.4",
+		"@vitest/ui": "^4.0.6",
+		"chance": "^1.1.13",
+		"typescript": "^5.9.3",
+		"vitest": "^4.0.6"
+	},
+	"dependencies": {
+		"@actions/core": "^1.11.1",
+		"@actions/github": "^6.0.1"
+	}
+}
