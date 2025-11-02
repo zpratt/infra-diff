@@ -41,7 +41,7 @@ describe("FilesystemAdapter", () => {
 		const nonExistentPath = path.join(testDir, "nonexistent.json");
 		const adapter = new FilesystemAdapter();
 
-		await expect(adapter.read(nonExistentPath)).rejects.toThrow();
+		await expect(adapter.read(nonExistentPath)).rejects.toThrow("ENOENT");
 	});
 
 	it("should throw an error if path is a directory", async () => {
@@ -50,6 +50,8 @@ describe("FilesystemAdapter", () => {
 
 		const adapter = new FilesystemAdapter();
 
-		await expect(adapter.read(dirPath)).rejects.toThrow();
+		await expect(adapter.read(dirPath)).rejects.toThrow(
+			`Path is not a file: ${dirPath}`,
+		);
 	});
 });

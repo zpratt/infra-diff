@@ -41,6 +41,9 @@ infra-diff is a typescript-based github action, which will show a preview of cha
 - All tests should be deterministic and produce the same result every time they are run.
 - Each test should be structured to follow the Arrange-Act-Assert pattern.
 - Do not modify tests to make them pass without understanding the root cause of the failure.
+- Avoid conditional logic in tests, unless it is absolutely necessary.
+- Ensure all code paths have corresponding tests that properly assert the expected behavior.
+- Ensure unhappy and evil paths are tested as well as happy paths.
 - Use Chance.js to generate random data for tests to ensure robustness when the value of the input data is not important.
 - Use descriptive names for variables, functions, and modules.
 - Keep functions small and focused on a single task.

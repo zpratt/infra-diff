@@ -58,4 +58,12 @@ describe("InputValidator", () => {
 			"Path is a directory, not a file",
 		);
 	});
+
+	it("should throw an error if file path is only whitespace", async () => {
+		const validator = new InputValidator();
+
+		await expect(validator.validatePlanFilePath("   ")).rejects.toThrow(
+			"Plan file path is required",
+		);
+	});
 });
