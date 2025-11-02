@@ -4,7 +4,7 @@ import type { IFileReader } from "./IFileReader";
 export class ReadPlanFileUseCase {
 	constructor(private readonly fileReader: IFileReader) {}
 
-	async execute(filePath: string): Promise<PlanFile> {
-		return await this.fileReader.read(filePath);
+	execute(filePath: string): Promise<PlanFile> {
+		return this.fileReader.read(filePath);
 	}
 }
