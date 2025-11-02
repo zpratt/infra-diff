@@ -16,6 +16,8 @@ jobs:
           node-version-file: ".nvmrc"
       - run: npm ci
       - run: npx biome check
+      - name: Build dist for actionlint validation
+        run: npm run build
       - name: Download actionlint
         id: get_actionlint
         run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
