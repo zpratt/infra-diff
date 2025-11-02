@@ -47,8 +47,10 @@ applyTo: "**"
 
 ## Testing Conventions
 
-- i want to always follow test driven development.
-- i want to always write a failing test first before writing production code.
-- i want to ensure only enough production code is written to make the test pass before moving to the next test.
-- i want to always use vitest for tests.
-- i do not want to run my tests in watch mode locally.
+- always follow test driven development.
+- always write a failing test first before writing production code.
+- ensure only enough production code is written to make the test pass before moving to the next test.
+- always use vitest for tests.
+- do not run tests in watch mode locally.
+- ensure we have tests for unhappy paths, evil paths, and happy paths.
+- always test domain entities through their usage rather than directly.
