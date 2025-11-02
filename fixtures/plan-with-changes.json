@@ -1,0 +1,37 @@
+{
+	"format_version": "1.0",
+	"terraform_version": "1.5.0",
+	"planned_values": {
+		"root_module": {
+			"resources": [
+				{
+					"address": "aws_s3_bucket.example",
+					"mode": "managed",
+					"type": "aws_s3_bucket",
+					"name": "example",
+					"values": {
+						"bucket": "my-test-bucket",
+						"acl": "private"
+					}
+				}
+			]
+		}
+	},
+	"resource_changes": [
+		{
+			"address": "aws_s3_bucket.example",
+			"mode": "managed",
+			"type": "aws_s3_bucket",
+			"name": "example",
+			"change": {
+				"actions": ["create"],
+				"before": null,
+				"after": {
+					"bucket": "my-test-bucket",
+					"acl": "private"
+				}
+			}
+		}
+	],
+	"configuration": {}
+}

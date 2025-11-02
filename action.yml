@@ -1,0 +1,21 @@
+---
+name: "infra-diff"
+description: "Show a preview of infrastructure changes based on terraform/terragrunt/opentofu plan files"
+author: "zpratt"
+branding:
+  icon: "file-text"
+  color: "blue"
+
+inputs:
+  plan-file-path:
+    description: "Path to the terraform/terragrunt/opentofu plan file (JSON or binary format)"
+    required: true
+    type: string
+
+outputs:
+  changes-summary:
+    description: "Summary of infrastructure changes"
+
+runs:
+  using: "node20"
+  main: "dist/index.js"

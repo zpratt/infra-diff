@@ -1,0 +1,67 @@
+import * as fs from "node:fs/promises";
+import type { IInputValidator } from "../../domain/usecases/IInputValidator";
+import type { FileSystemAdapter } from "../interfaces/FileSystemAdapter";
+
+export class DirectoryPathError extends Error {
+	constructor(message: string = "Path is a directory, not a file") {
+		super(message);
+		this.name = "DirectoryPathError";
+	}
+}
+
+export class FileNotFoundError extends Error {
+	constructor(filePath: string) {
+		super(`File does not exist: ${filePath}`);
+		this.name = "FileNotFoundError";
+	}
+}
+
+export class PermissionDeniedError extends Error {
+	constructor(filePath: string) {
+		super(`Permission denied: ${filePath}`);
+		this.name = "PermissionDeniedError";
+	}
+}
+
+export class InputValidator implements IInputValidator {
+	private fileSystem: FileSystemAdapter;
+
+	constructor(fileSystem?: FileSystemAdapter) {
+		this.fileSystem = fileSystem || {
+			stat: (filePath: string) => fs.stat(filePath),
+			readFile: (filePath: string) => fs.readFile(filePath, "utf-8"),
+		};
+	}
+
+	async validatePlanFilePath(filePath: string): Promise<void> {
+		if (!filePath || filePath.trim() === "") {
+			throw new Error("Plan file path is required");
+		}
+
+		try {
+			const stats = await this.fileSystem.stat(filePath);
+
+			if (!stats.isFile()) {
+				throw new DirectoryPathError();
+			}
+		} catch (error) {
+			if (error instanceof DirectoryPathError) {
+				throw error;
+			}
+
+			if (error instanceof Error && "code" in error) {
+				const code = (error as NodeJS.ErrnoException).code;
+				if (code === "ENOENT") {
+					throw new FileNotFoundError(filePath);
+				}
+				if (code === "EACCES") {
+					throw new PermissionDeniedError(filePath);
+				}
+				if (code === "EISDIR") {
+					throw new DirectoryPathError();
+				}
+			}
+			throw error;
+		}
+	}
+}
