@@ -41,7 +41,7 @@ Help me define features focused on continuous integration and delivery for teams
 Help me define high level features following the "As A {persona}", I want
 {capability}, So that I can {solve problem}".
 
-1. Avoid using the terms "best practices" because we the definition of "best" is constantly changing.
+1. Avoid using the terms "best practices" because the definition of "best" is constantly changing.
 1. Avoid the usage of the word "compliance" and instead use more generative concepts. We want to encourage a mindset of empowerment and continuous improvement, not restriction and limitation.
 1. Consider the "How to think of customer value" in your response.
 1. Avoid suggesting that we develop IDE Extensions.
