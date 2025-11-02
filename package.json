@@ -12,6 +12,7 @@
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
 		"lint:workflows": "actionlint .github/workflows/*.yml",
+		"lint:yaml": "yamllint .",
 		"format": "biome format --write ."
 	},
 	"repository": {
