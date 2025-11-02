@@ -91,6 +91,32 @@ describe("ParsePlanUseCase", () => {
 		);
 	});
 
+	it("should throw descriptive error when format_version is empty string", async () => {
+		const invalidPlan = JSON.stringify({
+			format_version: "",
+			terraform_version: "1.5.0",
+			resource_changes: [],
+		});
+		const parser = new ParsePlanUseCase();
+
+		await expect(parser.parse(invalidPlan)).rejects.toThrow(
+			"Invalid plan structure: missing or invalid required field 'format_version'",
+		);
+	});
+
+	it("should throw descriptive error when terraform_version is empty string", async () => {
+		const invalidPlan = JSON.stringify({
+			format_version: "1.0",
+			terraform_version: "",
+			resource_changes: [],
+		});
+		const parser = new ParsePlanUseCase();
+
+		await expect(parser.parse(invalidPlan)).rejects.toThrow(
+			"Invalid plan structure: missing or invalid required field 'terraform_version'",
+		);
+	});
+
 	it("should throw descriptive error when plan is missing resource_changes", async () => {
 		const invalidPlan = JSON.stringify({
 			format_version: "1.0",

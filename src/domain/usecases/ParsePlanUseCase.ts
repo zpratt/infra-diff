@@ -38,7 +38,8 @@ export class ParsePlanUseCase implements IPlanParser {
 
 		if (
 			!("format_version" in planData) ||
-			typeof planData.format_version !== "string"
+			typeof planData.format_version !== "string" ||
+			planData.format_version.trim() === ""
 		) {
 			throw new Error(
 				"Invalid plan structure: missing or invalid required field 'format_version'",
@@ -47,7 +48,8 @@ export class ParsePlanUseCase implements IPlanParser {
 
 		if (
 			!("terraform_version" in planData) ||
-			typeof planData.terraform_version !== "string"
+			typeof planData.terraform_version !== "string" ||
+			planData.terraform_version.trim() === ""
 		) {
 			throw new Error(
 				"Invalid plan structure: missing or invalid required field 'terraform_version'",
