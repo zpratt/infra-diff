@@ -130,6 +130,21 @@ describe("E2E: Terraform Integration with moto", () => {
 		// Cleanup
 		console.log("Cleaning up...");
 
+		// Have terraform container clean up its own files with proper permissions
+		try {
+			if (terraformContainer) {
+				console.log("Cleaning up terraform files from container...");
+				await terraformContainer.exec([
+					"sh",
+					"-c",
+					"rm -rf /terraform/.terraform /terraform/plan.bin /terraform/plan.json /terraform/.terraform.lock.hcl",
+				]);
+				console.log("Terraform files cleaned from container");
+			}
+		} catch (error) {
+			console.warn("Failed to cleanup from container:", error);
+		}
+
 		// Stop and remove terraform container
 		try {
 			if (terraformContainer) {
@@ -160,7 +175,7 @@ describe("E2E: Terraform Integration with moto", () => {
 			console.error("Failed to stop network:", error);
 		}
 
-		// Remove plan files
+		// Remove plan files from host
 		try {
 			if (existsSync(planFile)) {
 				unlinkSync(planFile);
@@ -177,9 +192,11 @@ describe("E2E: Terraform Integration with moto", () => {
 			const terraformStateDir = path.join(terraformDir, ".terraform");
 			if (existsSync(terraformStateDir)) {
 				rmSync(terraformStateDir, { recursive: true, force: true });
+				console.log(".terraform directory cleaned up");
 			}
 		} catch (error) {
-			console.error("Failed to cleanup .terraform directory:", error);
+			// Log error but don't fail - permissions issues in CI can be expected
+			console.warn("Failed to cleanup .terraform directory:", error);
 		}
 
 		// Remove lock file
