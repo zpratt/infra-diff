@@ -25,3 +25,10 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
+
+  # Monitor Terraform
+  - package-ecosystem: "terraform"
+    directory: "/e2e/terraform"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
