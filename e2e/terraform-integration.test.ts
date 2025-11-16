@@ -1,7 +1,12 @@
-import { execSync } from "node:child_process";
 import { existsSync, rmSync, unlinkSync } from "node:fs";
+import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { GenericContainer, type StartedTestContainer } from "testcontainers";
+import {
+	GenericContainer,
+	Network,
+	type StartedNetwork,
+	type StartedTestContainer,
+} from "testcontainers";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ParsePlanUseCase } from "../src/domain/usecases/ParsePlanUseCase";
 import { ReadPlanFileUseCase } from "../src/domain/usecases/ReadPlanFileUseCase";
@@ -9,41 +14,112 @@ import { FilesystemAdapter } from "../src/infrastructure/adapters/FilesystemAdap
 
 describe("E2E: Terraform Integration with moto", () => {
 	const terraformDir = path.join(process.cwd(), "e2e", "terraform");
-	const planFile = path.join(terraformDir, "plan.bin");
-	const planJsonFile = path.join(terraformDir, "plan.json");
+	const planFileRelative = "plan.bin";
+	const planFile = path.join(terraformDir, planFileRelative);
+	const planJsonFileRelative = "plan.json";
+	const planJsonFile = path.join(terraformDir, planJsonFileRelative);
 	let motoContainer: StartedTestContainer;
-	let motoPort: number;
+	let terraformContainer: StartedTestContainer;
+	let network: StartedNetwork;
+	const motoContainerName = "moto-server";
+
+	// Read Terraform version from .terraform-version file
+	const getTerraformVersion = async (): Promise<string> => {
+		const versionFilePath = path.join(process.cwd(), ".terraform-version");
+		const versionContent = await fs.readFile(versionFilePath, "utf-8");
+		return versionContent.trim();
+	};
 
 	beforeAll(async () => {
-		// Start moto server using testcontainers
-		console.log("Starting moto server...");
 		try {
-			motoPort = 50000;
+			// Get Terraform version from .terraform-version file
+			const terraformVersion = await getTerraformVersion();
+			console.log(`Using Terraform version: ${terraformVersion}`);
+
+			// Create a shared network for containers
+			console.log("Creating Docker network...");
+			network = await new Network().start();
+
+			// Start moto server in the network
+			console.log("Starting moto server...");
 			motoContainer = await new GenericContainer("motoserver/moto:5.0.0")
-				.withExposedPorts({ container: 5000, host: motoPort })
+				.withNetwork(network)
+				.withNetworkAliases(motoContainerName)
+				.withExposedPorts(5000)
 				.withStartupTimeout(120000)
 				.start();
 
+			const motoPort = motoContainer.getFirstMappedPort();
 			console.log(`Moto server is ready on port ${motoPort}`);
+
+			// Start Terraform container in the same network
+			console.log("Starting Terraform container...");
+			terraformContainer = await new GenericContainer(
+				`hashicorp/terraform:${terraformVersion}`,
+			)
+				.withNetwork(network)
+				.withBindMounts([
+					{
+						source: terraformDir,
+						target: "/terraform",
+						mode: "rw",
+					},
+				])
+				.withWorkingDir("/terraform")
+				.withEntrypoint(["/bin/sh", "-c", "exec sleep infinity"])
+				.withEnvironment({
+					AWS_ACCESS_KEY_ID: "testing",
+					AWS_SECRET_ACCESS_KEY: "testing",
+					AWS_SECURITY_TOKEN: "testing",
+					AWS_SESSION_TOKEN: "testing",
+					AWS_EC2_METADATA_DISABLED: "true",
+				})
+				.withStartupTimeout(60000)
+				.start();
+
+			console.log("Terraform container started");
 
 			// Initialize Terraform
 			console.log("Initializing Terraform...");
-			execSync("terraform init", { cwd: terraformDir, stdio: "pipe" });
+			const initResult = await terraformContainer.exec(["terraform", "init"]);
+			console.log("Init exit code:", initResult.exitCode);
+			if (initResult.exitCode !== 0) {
+				console.error("Init output:", initResult.output);
+				throw new Error(`Terraform init failed: ${initResult.output}`);
+			}
 
-			// Generate plan
+			// Generate plan using moto endpoint accessible from container
 			console.log("Generating Terraform plan...");
-			execSync(`terraform plan -out=${planFile}`, {
-				cwd: terraformDir,
-				stdio: "pipe",
-			});
+			const planResult = await terraformContainer.exec([
+				"terraform",
+				"plan",
+				`-out=${planFileRelative}`,
+				"-var",
+				`moto_endpoint=http://${motoContainerName}:5000`,
+				"-no-color",
+			]);
+			console.log("Plan exit code:", planResult.exitCode);
+			if (planResult.exitCode !== 0) {
+				console.error("Plan output:", planResult.output);
+				throw new Error(`Terraform plan failed: ${planResult.output}`);
+			}
 
 			// Convert plan to JSON
 			console.log("Converting plan to JSON...");
-			execSync(`terraform show -json ${planFile} > ${planJsonFile}`, {
-				cwd: terraformDir,
-				stdio: "pipe",
-				shell: "/bin/bash",
-			});
+			const showResult = await terraformContainer.exec([
+				"terraform",
+				"show",
+				"-json",
+				planFileRelative,
+			]);
+			console.log("Show exit code:", showResult.exitCode);
+			if (showResult.exitCode !== 0) {
+				console.error("Show output:", showResult.output);
+				throw new Error(`Terraform show failed: ${showResult.output}`);
+			}
+
+			// Write the JSON output to file
+			await fs.writeFile(planJsonFile, showResult.output);
 		} catch (error) {
 			console.error("Setup failed:", error);
 			throw error;
@@ -53,6 +129,36 @@ describe("E2E: Terraform Integration with moto", () => {
 	afterAll(async () => {
 		// Cleanup
 		console.log("Cleaning up...");
+
+		// Stop and remove terraform container
+		try {
+			if (terraformContainer) {
+				await terraformContainer.stop();
+				console.log("Terraform container stopped");
+			}
+		} catch (error) {
+			console.error("Failed to stop terraform container:", error);
+		}
+
+		// Stop and remove moto container
+		try {
+			if (motoContainer) {
+				await motoContainer.stop();
+				console.log("Moto container stopped");
+			}
+		} catch (error) {
+			console.error("Failed to stop moto container:", error);
+		}
+
+		// Stop and remove network
+		try {
+			if (network) {
+				await network.stop();
+				console.log("Network stopped");
+			}
+		} catch (error) {
+			console.error("Failed to stop network:", error);
+		}
 
 		// Remove plan files
 		try {
@@ -84,16 +190,6 @@ describe("E2E: Terraform Integration with moto", () => {
 			}
 		} catch (error) {
 			console.error("Failed to cleanup lock file:", error);
-		}
-
-		// Stop and remove moto container
-		try {
-			if (motoContainer) {
-				await motoContainer.stop();
-				console.log("Moto container stopped");
-			}
-		} catch (error) {
-			console.error("Failed to stop moto container:", error);
 		}
 	}, 60000); // 1 minute timeout for cleanup
 
