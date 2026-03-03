@@ -45,18 +45,16 @@ jobs:
     if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false
     permissions:
       contents: read
-      checks: write
+      pull-requests: write
 
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
 
       - name: Lint with lousy-agents
         uses: zpratt/lousy-agents@de649c721b0e0d81d7d129b2d0c6d621026e37a1  # v3.1.1
         with:
           github_token: ${{ github.token }}
-          instructions: true
-          agents: true
           filter_mode: nofilter
           skills: true
           instructions: true
