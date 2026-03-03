@@ -55,6 +55,9 @@ jobs:
         uses: zpratt/lousy-agents@de649c721b0e0d81d7d129b2d0c6d621026e37a1  # v3.1.1
         with:
           github_token: ${{ github.token }}
+          instructions: true
+          agents: true
+          skills: true
 
   validate-action:
     runs-on: ubuntu-latest
