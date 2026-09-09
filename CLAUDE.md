@@ -30,10 +30,10 @@ Select the project's Node.js version with `nvm use` before running any of these,
 - `npm run format` — rewrites files with `biome format --write .`. Plain `npx biome format` only reports; it will not change a file without `--write`.
 - `npm run lint:workflows` — validates the workflows in `.github/workflows/` with `actionlint`.
 - `npm run lint:yaml` — validates YAML files with `yamllint`.
-
-`actionlint` and `yamllint` are not npm packages and `npm ci` does not install them, so those two scripts fail until you install the tools yourself. CI reaches the same checks by other means: it downloads the `actionlint` binary and runs the `actionshub/yamllint` action.
 - `npm run build` — compiles to `dist/` with `@vercel/ncc`.
 - `npm install` — installs and updates dependencies. Use it rather than editing `package.json` by hand, so `package-lock.json` stays in sync.
+
+`actionlint` and `yamllint` are not npm packages and `npm ci` does not install them, so those two scripts fail until you install the tools yourself. CI reaches the same checks by other means: it downloads the `actionlint` binary and runs the `actionshub/yamllint` action.
 
 When adding a dependency, look up its most recent stable version and record that version explicitly, and run `npm audit` afterwards so a known vulnerability is caught at the point it enters the tree rather than at release.
 
