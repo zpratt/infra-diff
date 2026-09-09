@@ -23,7 +23,7 @@ This plan is designed for incremental validation, where each iteration produces 
 - ✅ Configure Biome for linting and formatting (no ESLint/Prettier)
 - ✅ Set up `@vercel/ncc` for compiling TypeScript to single distributable file
 - ✅ Install `@github/local-action` as dev dependency for local testing
-- ✅ Create basic action.yml with minimal inputs (plan-file-path with type validation)
+- ✅ Create basic action.yml with minimal inputs (plan-file-path, validated in code)
 - ✅ Follow CLEAN architecture: create domain entities and use case interfaces
 - ✅ Implement file reader use case (domain layer) with interface contract
 - ✅ Implement filesystem adapter (infrastructure layer) using Node.js fs
@@ -216,7 +216,7 @@ This plan is designed for incremental validation, where each iteration produces 
 **Tasks**:
 - ❌ Create logger interface (domain layer)
 - ❌ Implement logger adapter using `@actions/core` (info, warning, error, debug)
-- ❌ Add debug mode input to action.yml with boolean type validation
+- ❌ Add debug mode input to action.yml, parsed with `core.getBooleanInput`
 - ❌ Create error handler with actionable error messages
 - ❌ Implement version detector for Terraform/OpenTofu/Terragrunt
 - ❌ Log tool versions and environment details at startup

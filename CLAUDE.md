@@ -42,7 +42,7 @@ When adding a dependency, look up its most recent stable version and record that
 - Keep the CLEAN layering described above, following the [dependency rule](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html): source-code dependencies point inward only.
 - Give each module a single responsibility, and define the contract between two modules as an interface, so an adapter can be swapped or doubled without touching the use case.
 - Build the action on the [Actions Toolkit](https://github.com/actions/toolkit) packages. Read inputs through `core.getInput`, report failure through `core.setFailed`, and reach GitHub's API through `@actions/github` rather than a hand-rolled HTTP client.
-- Declare every action input and output in `action.yml`, and give each input a `type` where one applies, so GitHub validates it before the action runs.
+- Declare every action input and output in `action.yml`. An action input supports `description`, `required`, `default`, and `deprecationMessage` only. It has no `type` key — that belongs to `workflow_call` and `workflow_dispatch` inputs — and `actionlint` fails the build on one, so validate inputs in code through `IInputValidator` rather than expecting GitHub to do it.
 
 ## Engineering Practices
 
