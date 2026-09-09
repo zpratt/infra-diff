@@ -10,7 +10,6 @@ inputs:
   plan-file-path:
     description: "Path to the terraform/terragrunt/opentofu plan file (JSON or binary format)"
     required: true
-    type: string
 
 outputs:
   changes-summary:

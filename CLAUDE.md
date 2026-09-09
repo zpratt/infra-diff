@@ -2,61 +2,79 @@
 
 ## Project Overview
 
-infra-diff is a typescript-based github action, which will show a preview of changes that will be made to your infra based on the output of a terraform/terragrunt/opentofu plan.
+infra-diff is a TypeScript-based GitHub Action that previews the infrastructure changes a terraform/terragrunt/opentofu plan will make. It reads a plan file, parses it, and renders a reviewable diff.
+
+This file is the canonical convention guide. `.github/copilot-instructions.md` and `.github/instructions/` restate the same conventions for GitHub Copilot, which does not load this file. When you change a shared rule here, change it there too, otherwise the two harnesses drift apart and give conflicting direction on the same code.
+
+The feature roadmap lives in [`features/phase-1.md`](./features/phase-1.md) and the user-facing docs in [`docs/usage.md`](./docs/usage.md). Read those rather than restating them here.
 
 ## Repository Structure
 
+The layout follows CLEAN architecture, so the dependency direction is the part worth stating:
+
+- `src/domain/entities` — plan data structures (`Plan`, `PlanFile`). These import nothing outside the domain.
+- `src/domain/usecases` — application logic plus the interfaces it depends on (`IFileReader`, `IPlanParser`, `IInputValidator`).
+- `src/infrastructure/adapters` — implementations bound to Node.js and `@actions/*`, which depend inward on the domain interfaces.
+- `src/index.ts` — the action entry point, and the only place adapters are wired into use cases.
+- `e2e/` holds end-to-end tests, `fixtures/` holds sample plan files, `features/` holds the phased feature plan.
+
+Domain code shall not import from `src/infrastructure` or from `@actions/*`, so a use case stays testable without a GitHub Actions runtime.
+
 ## Common Commands
 
-**note**: Before running any commands, ensure that you have selected the proper Node.js version using `nvm use`. `biome` should be used as much as possible. Run `npx biome check` to check for linting errors, and `npx biome format` to automatically fix formatting issues.
+Select the project's Node.js version with `nvm use` before running any of these, because the version in `.nvmrc` is the one CI installs and a different local version will produce failures CI does not reproduce.
 
-- **run test suite**: `npm test` - Runs the full test suite using vitest.
-- **project validation**: `npm run lint` - Runs the linter to check for code quality issues.
-- **installing/updating dependencies**: `npm install` - Installs or updates project dependencies. 
-  - Always use this command to ensure `package-lock.json` is updated correctly
-  - Always use explicit version numbers when adding new dependencies.
-  - Always search npm for the most recent stable version of a package.
-  - Always use `npm audit` to check for vulnerabilities after installing or updating dependencies.
-- **lint GitHub Actions workflows**: `npm run lint:workflows` - Validates all GitHub Actions workflows using `actionlint` from the command line.
-- **lint YAML files**: `npm run lint:yaml` - Validates all YAML files using `yamllint` from the command line.
+- `npm test` — runs the full unit and e2e suite with vitest.
+- `npm run lint` — runs `biome check .`, covering both lint rules and formatting.
+- `npm run lint:fix` — applies the safe fixes `biome check` reports.
+- `npm run format` — rewrites files with `biome format --write .`. Plain `npx biome format` only reports; it will not change a file without `--write`.
+- `npm run lint:workflows` — validates the workflows in `.github/workflows/` with `actionlint`.
+- `npm run lint:yaml` — validates YAML files with `yamllint`.
+- `npm run build` — compiles to `dist/` with `@vercel/ncc`.
+- `npm install` — installs and updates dependencies. Use it rather than editing `package.json` by hand, so `package-lock.json` stays in sync.
+
+`actionlint` and `yamllint` are not npm packages and `npm ci` does not install them, so those two scripts fail until you install the tools yourself. CI reaches the same checks by other means: it downloads the `actionlint` binary and runs the `actionshub/yamllint` action.
+
+When adding a dependency, look up its most recent stable version and record that version explicitly, and run `npm audit` afterwards so a known vulnerability is caught at the point it enters the tree rather than at release.
 
 ## Architecture
 
-- Follow a modular architecture, where each module has a single responsibility.
-- Use interfaces to define contracts between different components.
-- The software architecture should follow CLEAN architecture principles as defined by Robert C. Martin [here](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html).
-- Uses the [Actions Toolkit](https://github.com/actions/toolkit) packages to implement the GitHub Action.
-- When interacting with GitHub's API, use the `@actions/github` package.
-- All action inputs and outputs should be defined in the `action.yml` file.
-- When possible, the input type should be specified in the `action.yml` file to enable automatic validation by GitHub.
-- All action inputs will be read using the `@actions/core` package, using `core.getInput`.
+- Keep the CLEAN layering described above, following the [dependency rule](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html): source-code dependencies point inward only.
+- Give each module a single responsibility, and define the contract between two modules as an interface, so an adapter can be swapped or doubled without touching the use case.
+- Build the action on the [Actions Toolkit](https://github.com/actions/toolkit) packages. Read inputs through `core.getInput`, report failure through `core.setFailed`, and reach GitHub's API through `@actions/github` rather than a hand-rolled HTTP client.
+- Declare every action input and output in `action.yml`. An action input supports `description`, `required`, `default`, and `deprecationMessage` only. It has no `type` key — that belongs to `workflow_call` and `workflow_dispatch` inputs — and `actionlint` fails the build on one, so validate inputs in code through `IInputValidator` rather than expecting GitHub to do it.
 
 ## Engineering Practices
 
-- Write unit tests for all new features and bug fixes.
-- Always write a failing unit test, ensure it fails, and then write a test with just enough code to make it pass.
-- Ensure that test assertions are meaningful and validate the expected behavior.
-- Avoid mocking 3rd party libraries unless absolutely necessary.
-- Focus on testing behavior rather than implementation details.
-- All tests should be deterministic and produce the same result every time they are run.
-- Each test should be structured to follow the Arrange-Act-Assert pattern.
-- Do not modify tests to make them pass without understanding the root cause of the failure.
-- Avoid conditional logic in tests, unless it is absolutely necessary.
-- Ensure all code paths have corresponding tests that properly assert the expected behavior.
-- Ensure unhappy and evil paths are tested as well as happy paths.
-- Use Chance.js to generate random data for tests to ensure robustness when the value of the input data is not important.
-- Use descriptive names for variables, functions, and modules.
-- Keep functions small and focused on a single task.
-- After every change to a test or production code, run the full test suite to ensure nothing is broken.
-- Whenever testing asynchronous http requests, use `msw` to mock the requests instead of making requests real endpoints or mocking the http client directly.
-- The entire project should have a robust validation process that is completely automated using GitHub Actions workflows, but should also be easy to run locally in the same way as the CI pipeline.
-- Use `biome` for code formatting and linting to maintain a consistent code style across the project.
-- Use `vitest` as the testing framework for unit and integration tests.
-- Never use `jest` in this project.
-- Use [@github/local-action](https://github.com/github/local-action) for local testing of the infra-diff action
-- Ensure all GitHub Actions workflows are validated using `rhysd/actionlint`
-- Ensure all YAML files are validated using `actionshub/yamllint`
-- Ensure all 3rd party GitHub Actions used in workflows are pinned to a specific version or commit SHA.
-- Use `@vercel/ncc` to compile the TypeScript code into a single JavaScript file for distribution.
-- Ensure all 3rd party GitHub Actions used in workflows are using the latest version.
-- Use `dependabot` to keep dependencies up to date.
+### Test-driven development
+
+- Write a failing test first, confirm that it fails for the reason you expect, then write just enough production code to pass it. A test that has never failed does not demonstrate that it can.
+- Run the full suite after every change to test or production code, so a regression is attributed to the change that caused it.
+- If a test fails, diagnose the cause before touching it. Do not edit a test to make it pass, because that converts a caught defect into a silent one.
+
+### What to test
+
+- Cover every new feature and bug fix, and every branch through production code, with assertions that state the intended behavior rather than restating the implementation.
+- Test unhappy and evil paths alongside happy ones. The error paths are where an action fails a user, and they are the paths nobody exercises by hand.
+- Structure each test as arrange-act-assert, and keep conditional logic out of tests, because a branch in a test means one of the two paths is not being exercised.
+- Keep tests deterministic and independent of external state, so a failure means a defect rather than an environment.
+
+### Test tooling
+
+- Use `vitest`. Do not add `jest`: the two runners define overlapping globals and a project carrying both gets nondeterministic resolution.
+- Use `chance` to generate input whose specific value does not matter, so a test does not silently depend on one hard-coded string.
+- Avoid mocking third-party libraries. Prefer a test double behind one of the domain interfaces, since that is the seam the architecture already provides.
+- When the action starts making HTTP requests, mock them with `msw` at the network boundary rather than stubbing the HTTP client, so the test still exercises the client's own behavior. `msw` is not yet a dependency; install it with the rest of that change.
+- Use `@github/local-action` to run the action end to end locally, which is the only way to see `core.getInput` and the step summary behave as they do on a runner.
+
+### Validation and CI
+
+- Every check CI runs should be runnable locally by the same npm script, so a contributor can reproduce a CI failure without pushing. The workflow and YAML linters are the outstanding gap, as noted above.
+- Pin every third-party action in a workflow to a commit SHA, because a tag can be moved to point at different code. Keep those pins current.
+- Validate workflows with [`rhysd/actionlint`](https://github.com/rhysd/actionlint) and YAML with [`actionshub/yamllint`](https://github.com/actionshub/yamllint).
+- `dependabot` keeps dependencies current; its configuration is in `.github/dependabot.yml`.
+
+### Code style
+
+- Use `biome` for formatting and linting. Do not add ESLint or Prettier, because a second formatter will fight biome over the same files.
+- Name variables, functions, and modules for what they do, and keep each function focused on one task.
